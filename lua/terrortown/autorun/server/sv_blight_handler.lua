@@ -36,7 +36,7 @@ hook.Add("Think", "BlightThink", function()
 
     local blight_delay = GetConVar("ttt2_blt_delay"):GetInt()
     local blight_min = GetConVar("ttt2_blt_min"):GetInt()
-    local blight_heal_cure = GetConVar("ttt2_blt_heal_cure"):GetInt()
+    local blight_heal_cure = GetConVar("ttt2_blt_heal_cure"):GetBool()
     if not ply.blightTime then ply.blightTime = CurTime() + blight_delay end
 
     if ply.blightTime <= CurTime() then
@@ -45,6 +45,7 @@ hook.Add("Think", "BlightThink", function()
         blight_dmg = ply:Health() - blight_min
       end
       if ply:Health() > ply.health_check_blight and blight_heal_cure then
+        -- print("[Blight] " .. ply:Health() - ply.health_check_blight)
         blight_dmg = 0
       end
       local dmginfo = DamageInfo()
@@ -52,7 +53,7 @@ hook.Add("Think", "BlightThink", function()
       dmginfo:SetDamageType(DMG_RADIATION)
       dmginfo:SetAttacker(blt_ply)
       ply:TakeDamageInfo(dmginfo)
-      ply.health_check_blight = ply:Health()
+      -- print("[Blight] " .. ply.health_check_blight)
       if ply:Health() <= blight_min or (ply:Health() > ply.health_check_blight and blight_heal_cure) then
         ply:SetNWBool("isBlighted", false)
         ply.blightTime = nil
@@ -62,6 +63,7 @@ hook.Add("Think", "BlightThink", function()
         net.WriteString("ttt2_blt_cured")
         net.Send(ply)
       else
+        ply.health_check_blight = ply:Health()
         ply.blightTime = CurTime() + blight_delay
       end
     end
@@ -84,10 +86,11 @@ hook.Add("TTT2PostPlayerDeath", "BlightKilled", function(ply, _, attacker)
   if GetRoundState() ~= ROUND_ACTIVE then return end
   if not IsValid(ply) or not IsValid(attacker) or not attacker:IsPlayer() then return end
   if ply:GetSubRole() ~= ROLE_BLIGHT then return end
-
   attacker:SetNWBool("isBlighted", true)
   attacker.blightTime = CurTime() + GetConVar("ttt2_blt_delay"):GetInt()
   attacker.blightPly = ply:SteamID()
+  attacker.health_check_blight = attacker:Health()
+  -- print("[Blight] " .. attacker.health_check_blight)
   STATUS:AddStatus(attacker, "blighted_status")
   net.Start("ttt2_blt_msg")
   net.WriteString("ttt2_blt_sick")
