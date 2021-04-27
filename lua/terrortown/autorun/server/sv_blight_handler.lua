@@ -58,6 +58,9 @@ hook.Add("Think", "BlightThink", function()
         ply:SetNWBool("isBlighted", false)
         ply.blightTime = nil
         ply.blightPly = nil
+
+        events.Trigger(EVENT_BLT_CURE, ply)
+
         STATUS:RemoveStatus(ply, "blighted_status")
         net.Start("ttt2_blt_msg")
         net.WriteString("ttt2_blt_cured")
@@ -75,6 +78,9 @@ hook.Add("TTTPlayerUsedHealthStation", "BlightHealthStation", function(ply)
     ply:SetNWBool("isBlighted", false)
     ply.blightTime = nil
     ply.blightPly = nil
+
+    events.Trigger(EVENT_BLT_CURE, ply)
+
     STATUS:RemoveStatus(ply, "blighted_status")
     net.Start("ttt2_blt_msg")
     net.WriteString("ttt2_blt_cured")
@@ -82,11 +88,14 @@ hook.Add("TTTPlayerUsedHealthStation", "BlightHealthStation", function(ply)
   end
 end)
 
-hook.Add("TTT2PostPlayerDeath", "BlightKilled", function(ply, _, attacker)
+hook.Add("DoPlayerDeath", "BlightKilled", function(ply, attacker, dmgInfo)
   if GetRoundState() ~= ROUND_ACTIVE then return end
   if not IsValid(ply) or not IsValid(attacker) or not attacker:IsPlayer() then return end
   if ply:GetSubRole() ~= ROLE_BLIGHT then return end
   if SpecDM and (ply.IsGhost and ply:IsGhost() or (attacker.IsGhost and attacker:IsGhost())) then return end
+
+  events.Trigger(EVENT_BLT_SICK, ply, attacker, dmgInfo)
+
   attacker:SetNWBool("isBlighted", true)
   attacker.blightTime = CurTime() + GetConVar("ttt2_blt_delay"):GetInt()
   attacker.blightPly = ply:SteamID()

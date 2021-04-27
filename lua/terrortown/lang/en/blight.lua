@@ -11,3 +11,9 @@ L["ttt2_desc_" .. BLIGHT.name] = [[The Blight is a traitor who infects the perso
 -- OTHER ROLE LANGUAGE STRINGS
 L["ttt2_blt_sick"] = "You feel sick"
 L["ttt2_blt_cured"] = "You feel much better"
+
+-- EVENT STRINGS
+L["title_blt_sick"] = "A Blight was killed"
+L["desc_blt_sick"] = "{nick} was blighted."
+L["title_blt_cure"] = "A player's blight was cured"
+L["desc_blt_cure"] = "{nick} recovered from their blight."
